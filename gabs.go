@@ -495,9 +495,9 @@ ParseJSON - Convert a string into a representation of the parsed JSON.
 func ParseJSON(sample []byte) (*Container, error) {
 	var gabs Container
 	
-	dec := json.NewDecoder(bytes.NewReader(sample))
-	dec.UseNumber()
-	if err := dec.Decode(&gabs.object); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(sample))
+	decoder.UseNumber()
+	if err := decoder.Decode(&gabs.object); err != nil {
 		return nil, err
 	}
 	if _, ok := gabs.object.(map[string]interface{}); ok {
