@@ -24,12 +24,12 @@ THE SOFTWARE.
 package gabs
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
 	"strings"
-	"bytes"
 )
 
 /*---------------------------------------------------------------------------------------------------
@@ -494,7 +494,22 @@ ParseJSON - Convert a string into a representation of the parsed JSON.
 */
 func ParseJSON(sample []byte) (*Container, error) {
 	var gabs Container
-	
+
+	if err := json.Unmarshal(sample, &gabs.object); err != nil {
+		return nil, err
+	}
+	if _, ok := gabs.object.(map[string]interface{}); ok {
+		return &gabs, nil
+	}
+	return nil, ErrInvalidInputText
+}
+
+/*
+ParseJSONNumber - Convert a string into a representation of the parsed JSON with application of type json.Number for all numbers.
+*/
+func ParseJSONNumber(sample []byte) (*Container, error) {
+	var gabs Container
+
 	decoder := json.NewDecoder(bytes.NewReader(sample))
 	decoder.UseNumber()
 	if err := decoder.Decode(&gabs.object); err != nil {

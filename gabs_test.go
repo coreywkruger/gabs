@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 )
 
@@ -30,6 +31,43 @@ func TestBasic(t *testing.T) {
 
 	if result, ok := val.Search("test2").Data().(float64); ok {
 		if result != 20 {
+			t.Errorf("Wrong value of result: %v", result)
+		}
+	} else {
+		t.Errorf("Didn't find test2")
+	}
+
+	if result := val.Bytes(); string(result) != string(sample) {
+		t.Errorf("Wrong []byte conversion: %s != %s", result, sample)
+	}
+}
+
+func TestBasicWithNumber(t *testing.T) {
+	sample := []byte(`{"test":{"value":10},"test2":20}`)
+
+	val, err := ParseJSONNumber(sample)
+	if err != nil {
+		t.Errorf("Failed to parse: %v", err)
+		return
+	}
+
+	if result, ok := val.Search([]string{"test", "value"}...).Data().(json.Number); ok {
+		result, err := strconv.ParseFloat(string(result), 64)
+		if result != 10 || err != nil {
+			t.Errorf("Wrong value of result: %v", result)
+		}
+	} else {
+		t.Errorf("Didn't find test.value")
+	}
+
+	if _, ok := val.Search("test2", "value").Data().(string); ok {
+		t.Errorf("Somehow found a field that shouldn't exist")
+	}
+
+	// if result, ok := val.Search("test2").Data().(float64); ok {
+	if result, ok := val.Search("test2").Data().(json.Number); ok {
+		result, err := strconv.ParseFloat(string(result), 64)
+		if result != 20 || err != nil {
 			t.Errorf("Wrong value of result: %v", result)
 		}
 	} else {
